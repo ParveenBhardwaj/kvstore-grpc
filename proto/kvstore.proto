@@ -1,0 +1,41 @@
+// Version 3 of protocol buffer syntax
+syntax = "proto3";
+
+// proto package name
+package kvstore;
+
+// Tells protoc where to generate Go code.
+option go_package = "kvstore-grpc/gen/kvstorepb";
+
+// Message defines a struct-like object
+// Message for Set request
+message SetRequest {
+    string key = 1;
+    string value = 2;
+}
+
+// Message for Get request
+message GetRequest {
+    string key = 1;
+}
+
+// Message for Delete request
+message DeleteRequest {
+    string key = 1;
+}
+
+// Generic empty response
+message Empty{}
+
+// Message for Get response
+message GetResponse {
+    string value = 1;
+}
+
+// Service definition
+service KVStore {
+    // rpc defines a function on the service.
+    rpc Set(SetRequest) returns (Empty);
+    rpc Get(GetRequest) returns (GetResponse);
+    rpc Delete(DeleteRequest) returns (Empty);
+}
