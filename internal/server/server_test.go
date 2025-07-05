@@ -12,7 +12,7 @@ func TestSetStoreValue(t *testing.T) {
 
 	req := &kvstorepb.SetRequest{
 		Key:   "hello",
-		value: "world",
+		Value: "world",
 	}
 
 	_, err := s.Set(context.Background(), req)
