@@ -140,3 +140,47 @@ type KVStoreClient interface {
 ```
 This is used by a client to make **RPC** calls to the server.
 
+# Wiring generated gRPC apis to business logic
+## Implementing SET, GET and DELETE features
+Create the `internal` directory, where all the app related business logic would go.
+
+The new directory for **server** should look like `kvstore-grpc/internal/service/`. New structure:
+```
+kvstore-grpc/
+├── go.mod
+├── proto/
+│   └── kvstore.proto
+├── gen/
+│   └── kvstorepb/
+│       ├── kvstore.pb.go
+│       └── kvstore_grpc.pb.go
+└── internal/
+    └── server/
+        ├── server.go
+        └── server_test.go
+```
+Understand the generated `KVStoreServer` interface in `kvstore_grpc.pb.go` file. The interface should look like:
+```go
+type KVStoreServer interface {
+  Set(context.Context, *SetRequest) (*Empty, error)
+  Get(context.Context, *GetRequest) (*GetResponse, error)
+  Delete(context.Context, *DeleteRequest) (*Empty, error)
+}
+```
+This is the interface you need to implement with business logic that should interact with the store and fullfill api requests.
+
+`server.go` would create a new **map** to store key-values in memory, and create three methods for the store to **Set**, **Get** and **Delete** key-values. These three methods would be exposed via the APIs.
+
+## Wire up a Real gRPC server in `main.go`
+After implementing the `server.go` with required methods to interact wit the store, we'll now expose these via the APIs with a **gRPC** server. The server in server's `main.go` should look something like:
+```go
+// Setup the server
+grpcServer := grpc.NewServer()
+kvStoreServer := server.NewInMemoryKvStore()
+// Register the server with gRPC
+kvstorepb.RegisterKVStoreServer(grpcServer, kvStoreServer)
+// Setup the listener
+listener, err:=net.Listen("tcp", ":50051")
+// Start the server with listener
+grpcServer.Server(listener)
+```
